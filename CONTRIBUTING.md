@@ -83,15 +83,24 @@ docker-compose down
 
 #### Helm Chart Testing
 
+Run these commands from the repository root:
+
 ```bash
+# Register the repositories used by the chart dependencies
+helm repo add opensearch https://opensearch-project.github.io/helm-charts/
+helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+
+# Download the chart dependencies
+helm dependency build charts/observability-stack
+
 # Validate chart syntax
-helm lint helm/observability-stack
+helm lint charts/observability-stack
 
 # Render templates to check for errors
-helm template observability-stack helm/observability-stack
+helm template observability-stack charts/observability-stack
 
 # Deploy to a test cluster (kind, minikube, etc.)
-helm install observability-stack-test helm/observability-stack
+helm install observability-stack-test charts/observability-stack
 
 # Verify deployment
 kubectl get pods
@@ -100,6 +109,16 @@ kubectl logs <pod-name>
 # Clean up
 helm uninstall observability-stack-test
 ```
+
+To run the same Helm lint and unit tests as CI, install the `helm-unittest` plugin
+and run the repository's test script (no Kubernetes cluster required):
+
+```bash
+helm plugin install https://github.com/helm-unittest/helm-unittest.git
+./test/helm-test.sh
+```
+
+The script downloads chart dependencies before running lint and unit tests.
 
 ### 3. Run Validation Tests
 
